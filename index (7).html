@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RubyGFN</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M8 4h16l6 9-14 15L2 13z' fill='%23ff2f7e'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#07040c;--bg2:#150a24;--ruby:#ff2f7e;--tx:#f4eefa;--mut:#a595b8;--glass:rgba(255,255,255,.06);--line:rgba(255,255,255,.12);--ok:#4ade80;--warn:#fbbf24;--r:18px;font-family:"Segoe UI",Inter,system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:radial-gradient(900px 500px at 85% -10%,#2a0f4a 0,transparent 70%),var(--bg);color:var(--tx);display:flex;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--ruby);outline-offset:2px}
+svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%)}
+#side{width:236px;padding:18px 12px;display:flex;flex-direction:column;gap:4px;margin:12px;transition:width .25s}
+body.min #side{width:68px}
+body.min .lbl{display:none}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 10px 18px;font-weight:700;font-size:19px;letter-spacing:.2px}
+.brand svg{width:30px;height:30px;fill:var(--ruby);stroke:none;filter:drop-shadow(0 0 8px rgba(255,47,126,.6))}
+.nav{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--mut);text-align:left;transition:.15s}
+.nav:hover{background:var(--glass);color:var(--tx)}
+.nav.on{background:rgba(255,47,126,.16);color:#fff;box-shadow:inset 3px 0 var(--ruby)}
+.sp{flex:1}
+#main{flex:1;overflow:auto;padding:12px 22px 40px 6px;min-width:0}
+.top{display:flex;gap:12px;align-items:center;margin-bottom:22px;flex-wrap:wrap}
+.search{flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:0 14px;height:44px}
+.search input{flex:1;background:none;border:0;color:var(--tx);font:inherit;outline:0;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:0 14px;height:44px;font-size:13px;color:var(--mut)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mut)}
+.dot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}.dot.bad{background:var(--ruby)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;background:var(--glass);border:1px solid var(--line);transition:.15s}
+.btn:hover{background:rgba(255,255,255,.12)}
+.btn.pri{background:var(--ruby);border-color:var(--ruby);font-weight:600;color:#fff}
+.btn.pri:hover{filter:brightness(1.1);box-shadow:0 0 22px rgba(255,47,126,.45)}
+.btn.sm{padding:7px 12px;font-size:13px}
+h1{font-size:30px;margin-bottom:6px}h2{font-size:18px;margin:26px 0 12px}
+p.mut,.mut{color:var(--mut);font-size:14px;line-height:1.5}
+.hero{padding:34px;position:relative;overflow:hidden;min-height:210px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px}
+.hero .art{position:absolute;inset:0;opacity:.9}
+.hero>*:not(.art){position:relative}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
+.card{overflow:hidden;display:flex;flex-direction:column;transition:transform .18s,border-color .18s}
+.card:hover{transform:translateY(-3px);border-color:rgba(255,47,126,.55)}
+.cover{aspect-ratio:3/4;display:flex;align-items:flex-end;padding:12px;font-weight:800;font-size:22px;line-height:1.05;position:relative}
+.cover small{position:absolute;top:10px;left:10px;font-size:10px;font-weight:600;background:rgba(0,0,0,.5);padding:3px 7px;border-radius:99px;color:#e9d9ff}
+.cb{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.cb b{font-size:14px}.row{display:flex;gap:8px;align-items:center}
+.fav{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:var(--glass);border:1px solid var(--line)}
+.fav.on{color:var(--ruby)}.fav.on svg{fill:var(--ruby)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:6px 14px;border-radius:99px;border:1px solid var(--line);font-size:13px;color:var(--mut)}
+.chip.on{background:var(--ruby);border-color:var(--ruby);color:#fff}
+.empty{padding:40px;text-align:center;color:var(--mut)}
+.set{padding:18px 20px;margin-bottom:14px}
+.set h3{font-size:16px;margin-bottom:4px}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-top:1px solid var(--line)}
+.opt:first-of-type{border-top:0}
+.opt div{max-width:560px}.opt small{display:block;color:var(--mut);font-size:12.5px;margin-top:3px;line-height:1.45}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;margin-left:8px;vertical-align:middle;border:1px solid}
+.tag.ok{color:var(--ok);border-color:var(--ok)}.tag.exp{color:var(--warn);border-color:var(--warn)}.tag.nv{color:var(--mut);border-color:var(--mut)}
+select{background:#1b102b;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit}
+.sw{width:46px;height:26px;border-radius:99px;background:rgba(255,255,255,.15);position:relative;transition:.2s;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sw[aria-checked=true]{background:var(--ruby)}.sw[aria-checked=true]::after{left:23px}
+#toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:50}
+.toast{padding:12px 16px;max-width:340px;font-size:14px;animation:in .25s;background:rgba(30,16,48,.92)}
+@keyframes in{from{opacity:0;transform:translateX(20px)}}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:40;padding:16px}
+#modal.show{display:grid}
+#modal .box{max-width:480px;width:100%;padding:26px;background:rgba(24,12,40,.95);animation:in .2s}
+#modal h3{margin-bottom:10px;font-size:20px}#modal .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--ruby);border-radius:50%;animation:sp 1s linear infinite;margin:40px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+#boot{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:99;transition:opacity .4s}
+#menu{display:none}
+@media(max-width:760px){body{flex-direction:column-reverse}#side{width:auto;margin:0;flex-direction:row;border-radius:0;padding:6px;overflow-x:auto;justify-content:space-around}.brand,.sp{display:none}.lbl{display:none}#main{padding:12px}body.min #side{width:auto}.hero{padding:22px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body>
+<div id="boot"><div class="spin"></div></div>
+<nav id="side" class="glass" aria-label="Main">
+  <div class="brand"><svg viewBox="0 0 32 32" style="stroke:none"><path d="M8 4h16l6 9-14 15L2 13z"/></svg><span class="lbl">RubyGFN</span></div>
+  <div id="navs"></div>
+  <div class="sp"></div>
+  <button class="nav" id="collapse" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg><span class="lbl">Collapse</span></button>
+</nav>
+<main id="main"></main>
+<div id="toasts" aria-live="polite"></div>
+<div id="modal"><div class="box glass" role="dialog" aria-modal="true"></div></div>
+
+<script>
+"use strict";
+const GFN_URL="https://play.geforcenow.com/";
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const IC={
+ home:'<path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/>',
+ lib:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+ fav:'<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.8-8 11-8 11z"/>',
+ rec:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ set:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+ about:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',
+ play:'<path d="M7 4l13 8-13 8z"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+ pad:'<path d="M6 8h12a4 4 0 014 4v2a3 3 0 01-5.4 1.8L15 14H9l-1.6 1.8A3 3 0 012 14v-2a4 4 0 014-4z"/><path d="M8 11v2M7 12h2"/>'
+};
+const ico=n=>`<svg viewBox="0 0 24 24">${IC[n]}</svg>`;
+const NAV=[["home","Home","home"],["library","Library","lib"],["favorites","Favorites","fav"],["recent","Recently Played","rec"],["settings","Settings","set"],["about","About","about"]];
+
+/* No demo games. The library stays empty until a verified catalog integration exists. */
+const GAMES=[];
+const CATS=["All",...new Set(GAMES.map(g=>g.cat))];
+
+const DEF={sidebarMin:false,res:"auto",fps:"auto",quality:"auto",fullscreen:false,pad:true,tabMode:false,confirmClose:false,tabFs:false};
+const store={
+ get(k,d){try{const v=localStorage.getItem("rgfn."+k);return v?JSON.parse(v):d}catch{return d}},
+ set(k,v){try{localStorage.setItem("rgfn."+k,JSON.stringify(v))}catch{toast("Storage unavailable. Changes won't be saved.")}}
+};
+let S={...DEF,...store.get("settings",{})},FAV=store.get("favs",[]),REC=store.get("recent",[]);
+let view="home",q="",cat="All",pads={},linked=store.get("linked",false);
+
+function toast(m){const t=document.createElement("div");t.className="toast glass";t.textContent=m;$("#toasts").append(t);setTimeout(()=>t.remove(),4200)}
+function modal(html,acts){const b=$("#modal .box");b.innerHTML=html+`<div class="acts"></div>`;acts.forEach(([l,f,p])=>{const x=document.createElement("button");x.className="btn"+(p?" pri":"");x.textContent=l;x.onclick=()=>{close();f&&f()};$(".acts",b).append(x)});$("#modal").classList.add("show");$(".btn:last-child",b).focus()}
+function close(){clearTimeout(pollT);login=null;$("#modal").classList.remove("show")}
+$("#modal").onclick=e=>{if(e.target.id==="modal")close()};
+addEventListener("keydown",e=>{if(e.key==="Escape")close()});
+
+function save(){store.set("settings",S)}
+function toggleFav(id){FAV=FAV.includes(id)?FAV.filter(x=>x!==id):[...FAV,id];store.set("favs",FAV);render()}
+function pushRecent(id){REC=[{id,t:Date.now()},...REC.filter(r=>r.id!==id)].slice(0,20);store.set("recent",REC)}
+
+/* ---------- Streaming adapters (modular). Only "official" is real. ---------- */
+const ADAPTERS={
+ official:{name:"Official GeForce NOW website",
+  launch(game){
+   if(S.tabMode) return openGamingTab(game);
+   const w=window.open(GFN_URL,"_blank","noopener");
+   if(!w) blocked();
+  }}
+};
+function blocked(){modal(`<h3>Popup blocked</h3><p class="mut">Your browser blocked the new tab. Allow popups for this site, or open GeForce NOW directly.</p>`,[["Close"],["Open GeForce NOW",()=>{location.href=GFN_URL},1]])}
+function play(id){
+ const g=GAMES.find(x=>x.id===id);if(!g)return;
+ pushRecent(id);
+ ADAPTERS.official.launch(g);
+ toast("Opening GeForce NOW. Search for “"+g.title+"” in your library there.");
+ render();
+}
+function quickLaunch(){ADAPTERS.official.launch(null)}
+
+/* ---------- Gaming Tab Mode (about:blank shell) ---------- */
+function openGamingTab(game){
+ const w=window.open("about:blank","_blank");   // must stay inside the click handler
+ if(!w){blocked();return}
+ const cc=S.confirmClose,fs=S.tabFs,url=GFN_URL;
+ const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>RubyGFN</title><style>
+ body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(800px 400px at 50% 0,#2a0f4a,#07040c);color:#f4eefa;font-family:system-ui,sans-serif;text-align:center}
+ .b{max-width:460px;padding:32px;border:1px solid rgba(255,255,255,.14);border-radius:20px;background:rgba(255,255,255,.06)}
+ button{font:inherit;color:#fff;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);padding:11px 18px;border-radius:12px;cursor:pointer;margin:6px}
+ .p{background:#ff2f7e;border-color:#ff2f7e;font-weight:600}p{color:#a595b8;line-height:1.5;font-size:14px}</style></head><body><div class="b">
+ <h2 style="margin:0 0 6px">RubyGFN gaming tab</h2><p id="g"></p>
+ <p>NVIDIA's site can't be embedded here, so Launch moves this tab to the official GeForce NOW page. Use the browser's Back button to return to this shell.</p>
+ <button class="p" id="l">Launch GeForce NOW</button><br><button id="r">Return to launcher</button><button id="x">Exit</button><p id="m"></p></div>
+ <script>
+ var CC=${cc},FS=${fs};
+ document.getElementById("g").textContent=${JSON.stringify(game?game.title:"Quick launch")};
+ function bu(e){e.preventDefault();e.returnValue=""}
+ if(CC){addEventListener("beforeunload",bu);document.getElementById("m").textContent="Close confirmation is on. Your browser controls the dialog wording."}
+ document.getElementById("l").onclick=function(){
+  if(FS&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});
+  removeEventListener("beforeunload",bu);location.href=${JSON.stringify(url)}};
+ document.getElementById("r").onclick=function(){try{if(opener&&!opener.closed){opener.focus();return}}catch(e){}document.getElementById("m").textContent="Launcher tab isn't reachable. Switch tabs manually."};
+ document.getElementById("x").onclick=function(){removeEventListener("beforeunload",bu);if(document.fullscreenElement)document.exitFullscreen();window.close();setTimeout(function(){document.getElementById("m").textContent="This tab can't close itself. Close it with Ctrl+W."},300)};
+ <\/script></body></html>`;
+ try{w.document.open();w.document.write(html);w.document.close()}catch(e){toast("Couldn't build the gaming shell. Opening GeForce NOW instead.");w.location.href=GFN_URL}
+}
+
+/* ---------- Views ---------- */
+function gameCard(g){
+ const f=FAV.includes(g.id);
+ return `<article class="card glass"><div class="cover" style="background:linear-gradient(160deg,${g.g.split(",")[0]}cc,${g.g.split(",")[1]})"><small>Demo</small>${esc(g.title)}</div>
+ <div class="cb"><span class="mut">${esc(g.cat)}</span><div class="row"><button class="btn pri sm" data-play="${g.id}" style="flex:1;justify-content:center">${ico("play")}Play</button>
+ <button class="fav ${f?"on":""}" data-fav="${g.id}" aria-label="${f?"Remove from":"Add to"} favorites" aria-pressed="${f}">${ico("fav")}</button></div></div></article>`}
+const grid=(list,empty)=>list.length?`<div class="grid">${list.map(gameCard).join("")}</div>`:`<div class="empty glass">${empty}</div>`;
+const byId=id=>GAMES.find(g=>g.id===id);
+function match(g){return g.title.toLowerCase().includes(q.toLowerCase())&&(cat==="All"||g.cat===cat)}
+
+function vHome(){
+ const li=auth.s==="in";
+ return `<div class="hero glass"><div class="art" style="background:radial-gradient(500px 240px at 80% 20%,#ff2f7e66,transparent),linear-gradient(120deg,#2a0f4a,#07040c)"></div>
+ <h1>${li?"NVIDIA account connected":"Connect your NVIDIA account"}</h1>
+ <p class="mut" style="max-width:520px">${li?"You're signed in. Your game library and streaming aren't built into RubyGFN yet, so no games are listed.":"RubyGFN shows a code. You enter it on NVIDIA's website and RubyGFN signs in. No password is typed here."}</p>
+ <div class="row">${li?`<button class="btn" data-act="acct">Account</button>`:`<button class="btn pri" data-act="acct">Connect NVIDIA</button>`}<button class="btn" data-act="quick">Open GeForce NOW</button></div></div>
+ <h2>Library</h2><div class="empty glass">No games to show. RubyGFN only lists games it can load from your account, and that part isn't built yet.</div>`}
+function vLib(){return `<h1>Library</h1><p class="mut" style="margin-bottom:16px">Loading your GeForce NOW library isn't built yet.</p>
+ <div class="chips">${CATS.map(c=>`<button class="chip ${c===cat?"on":""}" data-cat="${c}">${c}</button>`).join("")}</div>${grid(GAMES.filter(match),"Your library is empty. RubyGFN shows nothing rather than made-up titles.")}`}
+function vFav(){return `<h1>Favorites</h1><div style="height:14px"></div>${grid(FAV.map(byId).filter(Boolean).filter(match),"No favorites yet. Use the heart on a game card.")}`}
+function vRec(){return `<div class="row" style="justify-content:space-between"><h1>Recently played</h1>${REC.length?`<button class="btn sm" data-act="clrrec">Clear history</button>`:""}</div><div style="height:14px"></div>${grid(REC.map(r=>byId(r.id)).filter(Boolean),"No history yet.")}`}
+
+function sel(k,opts){return `<select data-s="${k}">${opts.map(o=>`<option ${S[k]===o?"selected":""}>${o}</option>`).join("")}</select>`}
+function sw(k){return `<button class="sw" role="switch" aria-checked="${!!S[k]}" data-t="${k}" aria-label="${k}"></button>`}
+function vSet(){
+ return `<h1>Settings</h1><div style="height:14px"></div>
+ <section class="set glass"><h3>Streaming preferences</h3><p class="mut">NVIDIA controls the real stream. These are saved here as your preference and are not sent to GeForce NOW. Change them in NVIDIA's own settings.<span class="tag nv">NVIDIA-controlled</span></p>
+ <div class="opt"><div>Resolution</div>${sel("res",["auto","1280x720","1920x1080","2560x1440"])}</div>
+ <div class="opt"><div>Frame rate</div>${sel("fps",["auto","30","60","120"])}</div>
+ <div class="opt"><div>Stream quality</div>${sel("quality",["auto","balanced","best image","lowest latency"])}</div>
+ <div class="opt"><div>Fullscreen on launch<small>Applies only to Gaming Tab Mode, since browsers require a click inside the new tab.</small></div>${sw("fullscreen")}</div></section>
+ <section class="set glass"><h3>Gaming Tab Mode<span class="tag exp">Experimental</span></h3><p class="mut">Opens an about:blank tab with a RubyGFN shell. All options are off by default.</p>
+ <div class="opt"><div>Open games in about:blank tab<small>If your browser blocks popups, RubyGFN tells you and offers a direct link.</small></div>${sw("tabMode")}</div>
+ <div class="opt"><div>Confirm before closing<small>Uses the browser's beforeunload prompt. The browser decides the dialog text and may skip it if you haven't interacted with the tab. It never blocks you from leaving.</small></div>${sw("confirmClose")}</div>
+ <div class="opt"><div>Request fullscreen on launch<small>Requested when you click Launch inside the gaming tab.</small></div>${sw("tabFs")}</div></section>
+ <section class="set glass"><h3>Controller<span class="tag ok">Working</span></h3>
+ <div class="opt"><div>Detect controllers in launcher<small>Polling pauses while this tab is hidden, so it never interferes with a stream in another tab.</small></div>${sw("pad")}</div>
+ <div id="padinfo" class="mut" style="padding-top:8px"></div></section>
+ <section class="set glass"><h3>Connection</h3><div id="conn" class="mut"></div></section>
+ <section class="set glass"><h3>Reset</h3><p class="mut">Clears settings, favorites and history stored by RubyGFN in this browser.</p><div style="height:10px"></div><button class="btn" data-act="reset">Reset all data</button></section>`}
+function vAbout(){return `<h1>About RubyGFN</h1><p class="mut" style="margin:6px 0 18px">Ruby Industries, 2026. Unofficial launcher. Not affiliated with NVIDIA.</p>
+ <section class="set glass"><h3>NVIDIA sign-in<span class="tag exp">Untested</span></h3><p class="mut">Uses NVIDIA's device-code login through the small helper server (server.js), following the open-source OpenNOW project. A plain web page can't do it alone. It has not been tested against live NVIDIA by the author. If NVIDIA rejects the request, the dialog shows NVIDIA's reply.</p></section>
+ <section class="set glass"><h3>Not built</h3><p class="mut">Game library loading and in-app streaming. Both depend on NVIDIA's undocumented services, and NVIDIA's terms ban reverse engineering. "Open GeForce NOW" opens the official site.</p></section>`}
+
+function vConn(){
+ const on=navigator.onLine;
+ return `<div class="row"><span class="dot ${on?"ok":"bad"}"></span>${on?"Browser is online":"Browser is offline"}</div><p class="mut" style="margin-top:6px">${navigator.connection?"Reported connection: "+esc(navigator.connection.effectiveType||"unknown")+(navigator.connection.downlink?", about "+navigator.connection.downlink+" Mbps":""):"Your browser doesn't report connection details."} For a real network test, use NVIDIA's check inside GeForce NOW.</p>`}
+
+function render(){
+ $("#navs").innerHTML=NAV.map(([k,l,i])=>`<button class="nav ${k===view?"on":""}" data-nav="${k}" title="${l}">${ico(i)}<span class="lbl">${l}</span></button>`).join("");
+ const showSearch=["home","library","favorites"].includes(view);
+ const top=`<div class="top">${showSearch?`<label class="search glass">${ico("search")}<input id="q" type="search" placeholder="Search games ( / )" value="${esc(q)}" aria-label="Search games"></label>`:`<div style="flex:1"></div>`}
+ <span class="pill glass"><span class="dot ${navigator.onLine?"ok":"bad"}"></span>${navigator.onLine?"Online":"Offline"}</span>
+ <span class="pill glass" id="padpill">${ico("pad")}<span>No controller</span></span>
+ <button class="btn glass" data-act="acct"><span class="dot ${auth.s==="in"?"ok":""}"></span>${auth.s==="in"?"NVIDIA: signed in":auth.s==="nosrv"?"NVIDIA: helper offline":"Connect NVIDIA"}</button></div>`;
+ const V={home:vHome,library:vLib,favorites:vFav,recent:vRec,settings:vSet,about:vAbout}[view];
+ const m=$("#main");const st=m.scrollTop;
+ m.innerHTML=top+V();m.scrollTop=st;
+ const qi=$("#q");if(qi&&document.activeElement===document.body&&q){qi.focus();qi.setSelectionRange(q.length,q.length)}
+ if(view==="settings")$("#conn").innerHTML=vConn();
+ padUI();
+}
+
+/* ---------- NVIDIA device-code login (via helper server) ---------- */
+let auth={s:"unknown"},login=null,pollT=0;
+async function api(p,o){const r=await fetch(p,{credentials:"same-origin",...o});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j}
+async function authInit(){try{const j=await api("/api/auth/status");auth=j.signedIn?{s:"in"}:{s:"out"}}catch{auth={s:"nosrv"}}render()}
+const safeUrl=u=>/^https:\/\/[a-z0-9.-]*nvidia\.com(\/|$)/i.test(u||"")?u:"";
+function loginUI(){
+ let h;const L=login;
+ if(auth.s==="in")h=`<h3>NVIDIA account</h3><p class="mut">You're signed in. Tokens stay on the helper server and are never shown here.</p><div class="acts"><button class="btn" data-act="close">Close</button><button class="btn pri" data-act="logout">Sign out</button></div>`;
+ else if(auth.s==="nosrv")h=`<h3>Login service not reachable</h3><p class="mut">The sign-in function isn't responding. Open the deployed Cloudflare Pages site (not the file from your computer) and make sure the RGFN storage binding is set, then check again.</p><div class="acts"><button class="btn" data-act="close">Close</button><button class="btn pri" data-act="retry">Check again</button></div>`;
+ else if(L&&L.err)h=`<h3>Couldn't sign in</h3><p class="mut" style="word-break:break-word">${esc(L.err)}</p><div class="acts"><button class="btn" data-act="close">Close</button><button class="btn pri" data-act="startlogin">Try again</button></div>`;
+ else if(L&&L.code){const u=safeUrl(L.urlc)||safeUrl(L.url);h=`<h3>Enter this code on NVIDIA</h3>
+  <div style="font-size:38px;letter-spacing:.16em;font-weight:800;text-align:center;margin:16px 0;font-family:ui-monospace,Consolas,monospace;user-select:all">${esc(L.code)}</div>
+  <p class="mut">Go to <b>${esc(L.url||"")}</b>, enter the code, and approve. This window updates by itself. The code expires in about ${Math.round(L.ttl/60)} minutes.</p>
+  <div class="acts"><button class="btn" data-act="close">Cancel</button><button class="btn" data-act="copycode">Copy code</button>${u?`<a class="btn pri" href="${esc(u)}" target="_blank" rel="noopener noreferrer">Open NVIDIA</a>`:""}</div>`}
+ else h=`<h3>Requesting a code</h3><div class="spin"></div>`;
+ $("#modal .box").innerHTML=h;$("#modal").classList.add("show");
+}
+async function startLogin(){
+ clearTimeout(pollT);login={};loginUI();
+ try{const j=await api("/api/auth/device/start",{method:"POST"});
+  login={code:j.user_code,url:j.verification_uri,urlc:j.verification_uri_complete,ttl:j.expires_in,iv:j.interval||5};loginUI();pollLogin()}
+ catch(e){login={err:e.message};loginUI()}
+}
+function pollLogin(){clearTimeout(pollT);pollT=setTimeout(async()=>{
+ if(!login||!login.code)return;
+ try{const j=await api("/api/auth/device/poll",{method:"POST"});
+  if(j.status==="ok"){auth={s:"in"};login=null;loginUI();render();toast("NVIDIA connected");return}
+  if(j.status==="pending"){login.iv=j.interval||login.iv;pollLogin();return}
+  login={err:j.status==="expired"?"The code expired. Request a new one.":j.status==="denied"?"Authorization was denied on NVIDIA's site.":(j.error||"Unexpected reply")};loginUI()
+ }catch(e){login={err:e.message};loginUI()}
+},(login.iv||5)*1000)}
+function acctModal(){if(auth.s==="in"||auth.s==="nosrv")loginUI();else startLogin()}
+
+/* ---------- Events ---------- */
+document.addEventListener("click",e=>{
+ const t=e.target.closest("[data-nav],[data-play],[data-fav],[data-cat],[data-act],[data-t],#collapse");if(!t)return;
+ if(t.id==="collapse"){S.sidebarMin=!S.sidebarMin;document.body.classList.toggle("min",S.sidebarMin);save();return}
+ if(t.dataset.nav){view=t.dataset.nav;render()}
+ else if(t.dataset.play)play(t.dataset.play);
+ else if(t.dataset.fav)toggleFav(t.dataset.fav);
+ else if(t.dataset.cat){cat=t.dataset.cat;render()}
+ else if(t.dataset.t){S[t.dataset.t]=!S[t.dataset.t];save();render();if(t.dataset.t==="pad")pollStart()}
+ else{const a=t.dataset.act;
+  if(a==="quick")quickLaunch();
+  if(a==="acct")acctModal();
+  if(a==="startlogin")startLogin();
+  if(a==="close")close();
+  if(a==="retry"){authInit().then(()=>auth.s==="nosrv"?loginUI():startLogin())}
+  if(a==="copycode"&&login&&login.code)navigator.clipboard.writeText(login.code).then(()=>toast("Code copied"),()=>toast("Couldn't copy. Select the code and copy it."));
+  if(a==="logout")api("/api/auth/logout",{method:"POST"}).catch(()=>{}).then(()=>{auth={s:"out"};close();render();toast("Signed out")});
+  if(a==="clrrec"){REC=[];store.set("recent",REC);render()}
+  if(a==="reset")modal(`<h3>Reset RubyGFN?</h3><p class="mut">This clears settings, favorites and history. It can't be undone.</p>`,[["Cancel"],["Reset everything",()=>{["settings","favs","recent","linked"].forEach(k=>{try{localStorage.removeItem("rgfn."+k)}catch{}});S={...DEF};FAV=[];REC=[];linked=false;document.body.classList.remove("min");render();toast("RubyGFN was reset.")},1]]);
+ }
+});
+document.addEventListener("input",e=>{if(e.target.id==="q"){q=e.target.value;render()}});
+document.addEventListener("change",e=>{const k=e.target.dataset.s;if(k){S[k]=e.target.value;save();toast("Saved. Only NVIDIA's settings affect the real stream.")}});
+addEventListener("keydown",e=>{
+ const typing=/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+ if(e.key==="/"&&!typing){e.preventDefault();if(!["home","library","favorites"].includes(view)){view="library";render()}$("#q")?.focus()}
+ if(!typing&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&/^[1-6]$/.test(e.key)){view=NAV[e.key-1][0];render()}
+ if(!typing&&e.key.toLowerCase()==="g"&&!e.ctrlKey){quickLaunch()}
+});
+addEventListener("online",()=>{toast("Back online");render()});addEventListener("offline",()=>{toast("You're offline");render()});
+
+/* ---------- Gamepad ---------- */
+let raf=0;
+function padUI(){
+ const ids=Object.values(pads),pill=$("#padpill span"),info=$("#padinfo");
+ if(pill)pill.textContent=padBlocked?"Controller blocked":!S.pad?"Detection off":ids.length?ids[0].id.split("(")[0].trim().slice(0,22):"No controller";
+ if(info)info.innerHTML=padBlocked?"The page that is hosting RubyGFN blocks controller access (a permissions policy). Open the file directly in a browser tab to use this.":!S.pad?"Detection is off.":ids.length?ids.map(p=>`<div style="margin-bottom:8px">${esc(p.id)}<br><span id="pd-${p.index}">Press a button</span></div>`).join(""):"Connect a controller and press any button to wake it up.";
+}
+let padBlocked=false;
+function readPads(){
+ if(padBlocked||!navigator.getGamepads)return [];
+ try{return [...navigator.getGamepads()].filter(Boolean)}
+ catch(err){padBlocked=true;padUI();toast("Controller access is blocked here. Open RubyGFN in its own tab to use a controller.");return []}
+}
+function pollStart(){cancelAnimationFrame(raf);if(!S.pad||document.hidden||padBlocked)return;
+ (function loop(){
+  const gp=readPads();if(padBlocked)return;
+  gp.forEach(p=>{const el=$("#pd-"+p.index);if(!el)return;
+   const b=p.buttons.map((x,i)=>x.pressed?i:null).filter(x=>x!==null),a=p.axes.map((v,i)=>Math.abs(v)>.3?`A${i}:${v.toFixed(1)}`:null).filter(Boolean);
+   el.textContent=(b.length||a.length)?`Buttons: ${b.join(", ")||"none"}  Axes: ${a.join(" ")||"idle"}`:"Press a button"});
+  raf=requestAnimationFrame(loop)})();
+}
+addEventListener("gamepadconnected",e=>{pads[e.gamepad.index]=e.gamepad;if(S.pad){toast("Controller connected: "+e.gamepad.id.split("(")[0].trim());padUI();pollStart()}});
+addEventListener("gamepaddisconnected",e=>{delete pads[e.gamepad.index];if(S.pad)toast("Controller disconnected");padUI()});
+document.addEventListener("visibilitychange",pollStart);
+
+/* ---------- Boot ---------- */
+document.body.classList.toggle("min",S.sidebarMin);
+render();pollStart();authInit();
+setTimeout(()=>{const b=$("#boot");b.style.opacity=0;setTimeout(()=>b.remove(),400)},450);
+</script>
+</body></html>
