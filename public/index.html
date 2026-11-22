@@ -240,12 +240,12 @@ function render(){
 /* ---------- NVIDIA device-code login (via helper server) ---------- */
 let auth={s:"unknown"},login=null,pollT=0;
 async function api(p,o){const r=await fetch(p,{credentials:"same-origin",...o});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j}
-async function authInit(){try{const j=await api("/api/auth/status");auth=j.signedIn?{s:"in"}:{s:"out"}}catch{auth={s:"nosrv"}}render()}
+async function authInit(){try{const j=await api("/api/auth/status");if(typeof j.signedIn!=="boolean")throw new Error("Unexpected reply from /api/auth/status");auth=j.signedIn?{s:"in"}:{s:"out"}}catch(e){auth={s:"nosrv",err:e.message}}render()}
 const safeUrl=u=>/^https:\/\/[a-z0-9.-]*nvidia\.com(\/|$)/i.test(u||"")?u:"";
 function loginUI(){
  let h;const L=login;
  if(auth.s==="in")h=`<h3>NVIDIA account</h3><p class="mut">You're signed in. Tokens stay on the helper server and are never shown here.</p><div class="acts"><button class="btn" data-act="close">Close</button><button class="btn pri" data-act="logout">Sign out</button></div>`;
- else if(auth.s==="nosrv")h=`<h3>Login service not reachable</h3><p class="mut">The sign-in function isn't responding. Open the deployed Cloudflare Pages site (not the file from your computer) and make sure the RGFN storage binding is set, then check again.</p><div class="acts"><button class="btn" data-act="close">Close</button><button class="btn pri" data-act="retry">Check again</button></div>`;
+ else if(auth.s==="nosrv")h=`<h3>Login service not reachable</h3><p class="mut">The sign-in function isn't responding. Open the deployed Cloudflare Pages site (not the file from your computer) and make sure the RGFN storage binding is set, then check again.</p><p class="mut" style="word-break:break-word">Error from the site: <b>${esc(auth.err||"none")}</b></p><div class="acts"><button class="btn" data-act="close">Close</button><button class="btn pri" data-act="retry">Check again</button></div>`;
  else if(L&&L.err)h=`<h3>Couldn't sign in</h3><p class="mut" style="word-break:break-word">${esc(L.err)}</p><div class="acts"><button class="btn" data-act="close">Close</button><button class="btn pri" data-act="startlogin">Try again</button></div>`;
  else if(L&&L.code){const u=safeUrl(L.urlc)||safeUrl(L.url);h=`<h3>Enter this code on NVIDIA</h3>
   <div style="font-size:38px;letter-spacing:.16em;font-weight:800;text-align:center;margin:16px 0;font-family:ui-monospace,Consolas,monospace;user-select:all">${esc(L.code)}</div>
